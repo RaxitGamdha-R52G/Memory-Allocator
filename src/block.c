@@ -1,39 +1,47 @@
-#include <sys/mman.h>
 #include <stdio.h>
+
 #include "block.h"
+#include "page.h"
 
-void *mem_alloc(size_t size)
+void split_block(p_mem_block block, size_t size)
 {
-    if (size == 0)
-        return NULL;
+    p_mem_block new_block = (p_mem_block)((char *)block + BLOCK_HEADER_SIZE + size);
+    new_block->size = block->size - size - BLOCK_HEADER_SIZE;
+    new_block->free = 1;
+    new_block->page = block->page;
 
-    size_t block_size = size + sizeof(struct mem_block);
+    new_block->prev = block;
+    new_block->next = block->next; // Any non-free memory block ahead
+    if (block->next != NULL)
+        block->next->prev = new_block; // Link back the next non-free memory block to new_block
 
-    void *region = mmap(NULL, block_size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-
-    if (region == MAP_FAILED)
-        return NULL;
-
-    p_mem_block block = (p_mem_block)region;
-
+    block->next = new_block;
     block->size = size;
     block->free = 0;
-
-    return (char *)block + sizeof(struct mem_block);
 }
 
-void mem_free(void *ptr)
+void coalesce_blocks(p_mem_block curr_block, p_mem_block next_block)
 {
-    if (ptr == NULL)
-        return;
+    curr_block->size += next_block->size + BLOCK_HEADER_SIZE;
+    curr_block->next = next_block->next;
 
-    p_mem_block block = (p_mem_block)((char *)ptr - sizeof(struct mem_block));
+    if (next_block->next != NULL)
+        next_block->next->prev = curr_block;
+}
 
+void remove_block(p_mem_block block)
+{
     block->free = 1;
-    size_t block_size = block->size + sizeof(struct mem_block);
 
-    if (munmap(block, block_size) != 0)
+    if (block->next != NULL && block->next->free)
+        coalesce_blocks(block, block->next);
+
+    if (block->prev != NULL && block->prev->free)
     {
-        printf("munmap failed\n");
+        block = block->prev;
+        coalesce_blocks(block, block->next);
     }
+
+    if (is_page_free(block))
+        remove_page(block);
 }
