@@ -1,5 +1,6 @@
 #include <sys/mman.h>
 #include <stdio.h>
+#include <stdint.h>
 
 #include "allocator.h"
 #include "page.h"
@@ -41,8 +42,15 @@ static p_mem_page create_page(size_t size)
     size_t page_region_size = PAGE_DEFAULT_SIZE;
     size_t req_size = PAGE_HEADER_SIZE + BLOCK_HEADER_SIZE + size;
 
-    while (page_region_size <= req_size)
+    while (page_region_size < req_size)
+    {
+        if (page_region_size > SIZE_MAX - PAGE_DEFAULT_SIZE)
+        {
+            fprintf(stderr, "CREATE_PAGE request size overflow\n");
+            return NULL;
+        }
         page_region_size += PAGE_DEFAULT_SIZE;
+    }
 
     p_mem_page new_page = mmap(NULL, page_region_size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
 

@@ -1,18 +1,27 @@
+#include <stdbool.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <string.h>
+
 #include "allocator.h"
 #include "block.h"
 #include "page.h"
 
 static size_t normalize_size(size_t size)
 {
-    size = (size + ALIGNMENT_SIZE) & ~ALIGNMENT_SIZE;
+    size = (size + ALIGNMENT_MASK) & ~ALIGNMENT_MASK;
     return size;
 }
 
-void *mem_alloc(size_t size)
+static bool is_valid_request(size_t quantity, size_t base_size)
 {
-    if (size == 0)
-        return NULL;
+    size_t max_size = SIZE_MAX - ALIGNMENT_MASK - BLOCK_HEADER_SIZE - PAGE_HEADER_SIZE;
 
+    return quantity <= max_size / base_size;
+}
+
+static void *allocate_region(size_t size)
+{
     // Normalize the size first
     size = normalize_size(size);
 
@@ -33,6 +42,42 @@ void *mem_alloc(size_t size)
         block->free = 0;
 
     return (char *)block + BLOCK_HEADER_SIZE;
+}
+
+void *mem_alloc(size_t size)
+{
+    if (size == 0)
+        return NULL;
+
+    // Validate the size first to avoid overflow
+    if (!is_valid_request(1, size))
+    {
+        fprintf(stderr, "mem_alloc request failed due to requested memory size overflow\n");
+        return NULL;
+    }
+
+    return allocate_region(size);
+}
+
+void *mem_calloc(size_t quantity, size_t base_size)
+{
+    if (!quantity || !base_size)
+        return NULL;
+
+    // Validate if given quantity with its base_size can be allocated in memory
+    if (!is_valid_request(quantity, base_size))
+    {
+        fprintf(stderr, "mem_calloc request failed due to requested memory size overflow\n");
+        return NULL;
+    }
+
+    size_t req_size = quantity * base_size;
+
+    void *region = allocate_region(req_size);
+    if (region == NULL)
+        return NULL;
+
+    return memset(region, 0, req_size);
 }
 
 void mem_free(void *ptr)

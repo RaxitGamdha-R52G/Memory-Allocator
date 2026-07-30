@@ -2,6 +2,7 @@
 #define BLOCK_H
 
 #include <stddef.h>
+#include "allocator.h"
 
 // Forward declaration of Memory Page for reference
 struct mem_page;
@@ -21,7 +22,7 @@ typedef struct mem_block
 
 // Default Memory Block Properties
 #define BLOCK_HEADER_SIZE sizeof(struct mem_block)
-#define BLOCK_MIN_USABLE_SIZE (ALIGNMENT_SIZE + 1)
+#define BLOCK_MIN_USABLE_SIZE ALIGNMENT
 
 // Memory Functions
 void split_block(p_mem_block block, size_t size);
