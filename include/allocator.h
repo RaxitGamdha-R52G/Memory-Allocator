@@ -9,6 +9,7 @@
 // Memory Allocator Functions
 void *mem_alloc(size_t size);
 void *mem_calloc(size_t quantity, size_t base_size);
+void *mem_realloc(void *ptr, size_t size);
 void mem_free(void *ptr);
 
 extern size_t mmap_call;

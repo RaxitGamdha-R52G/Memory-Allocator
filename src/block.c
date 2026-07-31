@@ -17,7 +17,7 @@ void split_block(p_mem_block block, size_t size)
 
     block->next = new_block;
     block->size = size;
-    block->free = 0;
+    // block->free = 0;
 }
 
 void coalesce_blocks(p_mem_block curr_block, p_mem_block next_block)

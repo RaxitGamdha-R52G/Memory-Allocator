@@ -38,10 +38,59 @@ static void *allocate_region(size_t size)
 
     if (block->size >= size + BLOCK_HEADER_SIZE + BLOCK_MIN_USABLE_SIZE)
         split_block(block, size);
-    else
-        block->free = 0;
+
+    block->free = 0;
 
     return (char *)block + BLOCK_HEADER_SIZE;
+}
+
+static void *relocate_block(void *ptr, p_mem_block block, size_t new_size)
+{
+    void *new_region = mem_alloc(new_size);
+
+    if (new_region == NULL)
+        return NULL;
+
+    memcpy(new_region, ptr, block->size);
+    mem_free(ptr);
+
+    return new_region;
+}
+
+static bool expand_block(p_mem_block block, size_t new_size)
+{
+    if (block->next == NULL || !block->next->free)
+        return false;
+
+    // Remaining Size
+    size_t rem_size = new_size - block->size;
+
+    if (block->next->size + BLOCK_HEADER_SIZE < rem_size)
+        return false;
+
+    coalesce_blocks(block, block->next);
+
+    if (block->size - new_size >= BLOCK_HEADER_SIZE + BLOCK_MIN_USABLE_SIZE)
+    {
+        split_block(block, new_size);
+    }
+
+    block->free = 0;
+
+    return true;
+}
+
+static void shrink_block(p_mem_block block, size_t new_size)
+{
+    // Remaining Size
+    size_t rem_size = block->size - new_size;
+
+    if (rem_size >= BLOCK_HEADER_SIZE + BLOCK_MIN_USABLE_SIZE)
+    {
+        split_block(block, new_size);
+    }
+
+    block->free = 0;
 }
 
 void *mem_alloc(size_t size)
@@ -78,6 +127,51 @@ void *mem_calloc(size_t quantity, size_t base_size)
         return NULL;
 
     return memset(region, 0, req_size);
+}
+
+void *mem_realloc(void *ptr, size_t new_size)
+{
+    if (!ptr && !new_size)
+        return NULL;
+
+    if (!ptr)
+        return mem_alloc(new_size);
+
+    if (!new_size)
+    {
+        mem_free(ptr);
+        return NULL;
+    }
+
+    p_mem_block block = (p_mem_block)((char *)ptr - BLOCK_HEADER_SIZE);
+
+    // Validate new_size
+    if (!is_valid_request(1, new_size))
+    {
+        fprintf(stderr, "mem_realloc request failed due to requested memory size overflow\n");
+        return NULL;
+    }
+
+    // Normalize new_size
+    new_size = normalize_size(new_size);
+
+    // Same new_size as old_size
+    if (block->size == new_size)
+        return ptr;
+
+    // Shrink current block
+    if (block->size > new_size)
+    {
+        shrink_block(block, new_size);
+        return ptr;
+    }
+
+    // Extend current block
+    if (expand_block(block, new_size))
+        return ptr;
+
+    // Alloc new block and free current block
+    return relocate_block(ptr, block, new_size);
 }
 
 void mem_free(void *ptr)
