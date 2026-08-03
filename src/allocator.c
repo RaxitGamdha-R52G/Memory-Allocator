@@ -6,6 +6,7 @@
 #include "allocator.h"
 #include "block.h"
 #include "page.h"
+#include "stats.h"
 
 static size_t normalize_size(size_t size)
 {
@@ -95,6 +96,8 @@ static void shrink_block(p_mem_block block, size_t new_size)
 
 void *mem_alloc(size_t size)
 {
+    stats.api.alloc++;
+
     if (size == 0)
         return NULL;
 
@@ -110,6 +113,8 @@ void *mem_alloc(size_t size)
 
 void *mem_calloc(size_t quantity, size_t base_size)
 {
+    stats.api.calloc++;
+
     if (!quantity || !base_size)
         return NULL;
 
@@ -131,6 +136,8 @@ void *mem_calloc(size_t quantity, size_t base_size)
 
 void *mem_realloc(void *ptr, size_t new_size)
 {
+    stats.api.realloc++;
+
     if (!ptr && !new_size)
         return NULL;
 
@@ -176,6 +183,8 @@ void *mem_realloc(void *ptr, size_t new_size)
 
 void mem_free(void *ptr)
 {
+    stats.api.free++;
+
     if (ptr == NULL)
         return;
 
