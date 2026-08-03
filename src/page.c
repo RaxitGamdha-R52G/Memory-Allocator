@@ -5,6 +5,7 @@
 #include "allocator.h"
 #include "page.h"
 #include "block.h"
+#include "stats.h"
 
 // Memory Page Node Handlers
 p_mem_page g_heap_head = NULL;
@@ -19,6 +20,8 @@ static p_mem_page create_page(size_t size);
 
 p_mem_block find_first_fit(size_t size)
 {
+    stats.internal.find_first_fit++;
+
     p_mem_page curr_page = g_heap_head;
 
     while (curr_page)
@@ -81,6 +84,8 @@ static p_mem_page create_page(size_t size)
 
 p_mem_block add_page(size_t size)
 {
+    stats.internal.add_page++;
+
     p_mem_page new_page = create_page(size);
 
     if (new_page == NULL)
@@ -102,6 +107,8 @@ p_mem_block add_page(size_t size)
 
 void remove_page(p_mem_block block)
 {
+    stats.internal.remove_page++;
+    
     if (block == NULL)
         return;
 

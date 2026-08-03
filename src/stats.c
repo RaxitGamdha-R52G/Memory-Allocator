@@ -1,5 +1,6 @@
 #include <string.h>
 
+#include "allocator.h"
 #include "stats.h"
 
 allocator_stats stats = {0};

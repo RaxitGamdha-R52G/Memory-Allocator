@@ -23,6 +23,8 @@ static bool is_valid_request(size_t quantity, size_t base_size)
 
 static void *allocate_region(size_t size)
 {
+    stats.internal.allocate_region++;
+
     // Normalize the size first
     size = normalize_size(size);
 
@@ -47,6 +49,8 @@ static void *allocate_region(size_t size)
 
 static void *relocate_block(void *ptr, p_mem_block block, size_t new_size)
 {
+    stats.internal.relocate_block++;
+
     void *new_region = mem_alloc(new_size);
 
     if (new_region == NULL)
@@ -60,6 +64,8 @@ static void *relocate_block(void *ptr, p_mem_block block, size_t new_size)
 
 static bool expand_block(p_mem_block block, size_t new_size)
 {
+    stats.internal.expand_block++;
+
     if (block->next == NULL || !block->next->free)
         return false;
 
@@ -83,6 +89,8 @@ static bool expand_block(p_mem_block block, size_t new_size)
 
 static void shrink_block(p_mem_block block, size_t new_size)
 {
+    stats.internal.shrink_block++;
+
     // Remaining Size
     size_t rem_size = block->size - new_size;
 

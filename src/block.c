@@ -2,9 +2,12 @@
 
 #include "block.h"
 #include "page.h"
+#include "stats.h"
 
 void split_block(p_mem_block block, size_t size)
 {
+    stats.internal.split_block++;
+
     p_mem_block new_block = (p_mem_block)((char *)block + BLOCK_HEADER_SIZE + size);
     new_block->size = block->size - size - BLOCK_HEADER_SIZE;
     new_block->free = 1;
@@ -22,6 +25,8 @@ void split_block(p_mem_block block, size_t size)
 
 void coalesce_blocks(p_mem_block curr_block, p_mem_block next_block)
 {
+    stats.internal.coalesce_blocks++;
+
     curr_block->size += next_block->size + BLOCK_HEADER_SIZE;
     curr_block->next = next_block->next;
 
@@ -31,6 +36,8 @@ void coalesce_blocks(p_mem_block curr_block, p_mem_block next_block)
 
 void remove_block(p_mem_block block)
 {
+    stats.internal.remove_block++;
+
     block->free = 1;
 
     if (block->next != NULL && block->next->free)

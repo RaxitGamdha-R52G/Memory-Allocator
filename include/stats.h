@@ -4,7 +4,7 @@
 #include <stddef.h>
 
 // Structure of Statistics
-typedef struct
+typedef struct statistics
 {
     // Allocator API Stats 
     struct
@@ -15,13 +15,28 @@ typedef struct
         size_t free;
     } api;
 
+    // Internal Functions Stats
+    struct{
+        // Allocation
+        size_t allocate_region;
+        size_t find_first_fit;
+
+        // Block management 
+        size_t split_block;
+        size_t coalesce_blocks;
+        size_t expand_block;
+        size_t shrink_block;
+        size_t relocate_block;
+        size_t remove_block;
+
+        // Page management
+        size_t add_page;
+        size_t remove_page;
+    } internal;
+
 } allocator_stats;
 
 // Global statistics object 
 extern allocator_stats stats;
-
-// Stats functions
-void stats_reset(void);
-const allocator_stats *stats_get(void);
 
 #endif // STATS_H
