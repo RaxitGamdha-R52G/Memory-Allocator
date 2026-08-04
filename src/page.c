@@ -20,6 +20,7 @@ static p_mem_page create_page(size_t size);
 
 p_mem_block find_first_fit(size_t size)
 {
+    // stats update
     stats.internal.find_first_fit++;
 
     p_mem_page curr_page = g_heap_head;
@@ -79,6 +80,7 @@ static p_mem_page create_page(size_t size)
 
     new_page->first_block = block;
 
+    // stats update
     stats.pages.created++;
     stats.blocks.created++;
     stats.blocks.current_free++;
@@ -91,6 +93,7 @@ static p_mem_page create_page(size_t size)
 
 p_mem_block add_page(size_t size)
 {
+    // stats update
     stats.internal.add_page++;
 
     p_mem_page new_page = create_page(size);
@@ -110,6 +113,7 @@ p_mem_block add_page(size_t size)
         g_heap_tail = new_page;
     }
 
+    // stats update
     stats.pages.current++;
 
     if (stats.pages.current > stats.pages.peak)
@@ -120,6 +124,7 @@ p_mem_block add_page(size_t size)
 
 void remove_page(p_mem_block block)
 {
+    // stats update
     stats.internal.remove_page++;
 
     if (!block)
@@ -143,6 +148,7 @@ void remove_page(p_mem_block block)
         return;
     }
 
+    // stats update
     stats.blocks.destroyed++;
     stats.blocks.current--;
     stats.blocks.current_free--;

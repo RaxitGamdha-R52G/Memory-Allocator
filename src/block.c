@@ -6,6 +6,7 @@
 
 void split_block(p_mem_block block, size_t size)
 {
+    // stats update
     stats.internal.split_block++;
 
     p_mem_block new_block = (p_mem_block)((char *)block + BLOCK_HEADER_SIZE + size);
@@ -22,6 +23,7 @@ void split_block(p_mem_block block, size_t size)
     block->size = size;
     // block->free = 0;
 
+    // stats update
     stats.blocks.created++;
     stats.blocks.current_free++;
     stats.blocks.current++;
@@ -31,6 +33,7 @@ void split_block(p_mem_block block, size_t size)
 
 void coalesce_blocks(p_mem_block curr_block, p_mem_block next_block)
 {
+    // stats update
     stats.internal.coalesce_blocks++;
 
     curr_block->size += next_block->size + BLOCK_HEADER_SIZE;
@@ -38,7 +41,8 @@ void coalesce_blocks(p_mem_block curr_block, p_mem_block next_block)
 
     if (next_block->next != NULL)
         next_block->next->prev = curr_block;
-    
+
+    // stats update
     stats.blocks.destroyed++;
     stats.blocks.current--;
     stats.blocks.current_free--;
@@ -50,9 +54,9 @@ void remove_block(p_mem_block block)
 
     block->free = 1;
 
+    // stats update
     stats.blocks.current_used--;
     stats.blocks.current_free++;
-    
 
     if (block->next != NULL && block->next->free)
         coalesce_blocks(block, block->next);

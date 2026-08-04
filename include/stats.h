@@ -6,7 +6,7 @@
 // Structure of Statistics
 typedef struct statistics
 {
-    // Allocator API Stats 
+    // Allocator API Stats
     struct
     {
         size_t alloc;
@@ -16,12 +16,13 @@ typedef struct statistics
     } api;
 
     // Internal Functions Stats
-    struct{
+    struct
+    {
         // Allocation
         size_t allocate_region;
         size_t find_first_fit;
 
-        // Block management 
+        // Block management
         size_t split_block;
         size_t coalesce_blocks;
         size_t expand_block;
@@ -35,7 +36,8 @@ typedef struct statistics
     } internal;
 
     // Page Stats
-    struct {
+    struct
+    {
         size_t current;
         size_t peak;
         size_t created;
@@ -43,7 +45,8 @@ typedef struct statistics
     } pages;
 
     // Block Stats
-    struct {
+    struct
+    {
         size_t current;
         size_t peak;
         size_t created;
@@ -54,7 +57,7 @@ typedef struct statistics
 
 } allocator_stats;
 
-// Global statistics object 
+// Global statistics object
 extern allocator_stats stats;
 
 #endif // STATS_H

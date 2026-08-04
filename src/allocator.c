@@ -23,6 +23,7 @@ static bool is_valid_request(size_t quantity, size_t base_size)
 
 static void *allocate_region(size_t size)
 {
+    // stats update
     stats.internal.allocate_region++;
 
     // Normalize the size first
@@ -44,6 +45,7 @@ static void *allocate_region(size_t size)
 
     block->free = 0;
 
+    // stats update
     stats.blocks.current_used++;
     stats.blocks.current_free--;
 
@@ -52,6 +54,7 @@ static void *allocate_region(size_t size)
 
 static void *relocate_block(void *ptr, p_mem_block block, size_t new_size)
 {
+    // stats update
     stats.internal.relocate_block++;
 
     void *new_region = mem_alloc(new_size);
@@ -67,6 +70,7 @@ static void *relocate_block(void *ptr, p_mem_block block, size_t new_size)
 
 static bool expand_block(p_mem_block block, size_t new_size)
 {
+    // stats update
     stats.internal.expand_block++;
 
     if (block->next == NULL || !block->next->free)
@@ -92,6 +96,7 @@ static bool expand_block(p_mem_block block, size_t new_size)
 
 static void shrink_block(p_mem_block block, size_t new_size)
 {
+    // stats update
     stats.internal.shrink_block++;
 
     // Remaining Size
@@ -107,6 +112,7 @@ static void shrink_block(p_mem_block block, size_t new_size)
 
 void *mem_alloc(size_t size)
 {
+    // stats update
     stats.api.alloc++;
 
     if (size == 0)
@@ -124,6 +130,7 @@ void *mem_alloc(size_t size)
 
 void *mem_calloc(size_t quantity, size_t base_size)
 {
+    // stats update
     stats.api.calloc++;
 
     if (!quantity || !base_size)
@@ -147,6 +154,7 @@ void *mem_calloc(size_t quantity, size_t base_size)
 
 void *mem_realloc(void *ptr, size_t new_size)
 {
+    // stats update
     stats.api.realloc++;
 
     if (!ptr && !new_size)
@@ -194,6 +202,7 @@ void *mem_realloc(void *ptr, size_t new_size)
 
 void mem_free(void *ptr)
 {
+    // stats update
     stats.api.free++;
 
     if (ptr == NULL)
