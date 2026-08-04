@@ -80,6 +80,11 @@ static p_mem_page create_page(size_t size)
     new_page->first_block = block;
 
     stats.pages.created++;
+    stats.blocks.created++;
+    stats.blocks.current_free++;
+    stats.blocks.current++;
+    if (stats.blocks.current > stats.blocks.peak)
+        stats.blocks.peak = stats.blocks.current;
 
     return new_page;
 }
@@ -137,6 +142,10 @@ void remove_page(p_mem_block block)
         fprintf(stderr, "REMOVE_PAGE request failed\n");
         return;
     }
+
+    stats.blocks.destroyed++;
+    stats.blocks.current--;
+    stats.blocks.current_free--;
 
     stats.pages.current--;
     stats.pages.destroyed++;

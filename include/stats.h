@@ -42,6 +42,16 @@ typedef struct statistics
         size_t destroyed;
     } pages;
 
+    // Block Stats
+    struct {
+        size_t current;
+        size_t peak;
+        size_t created;
+        size_t destroyed;
+        size_t current_used;
+        size_t current_free;
+    } blocks;
+
 } allocator_stats;
 
 // Global statistics object 

@@ -44,6 +44,9 @@ static void *allocate_region(size_t size)
 
     block->free = 0;
 
+    stats.blocks.current_used++;
+    stats.blocks.current_free--;
+
     return (char *)block + BLOCK_HEADER_SIZE;
 }
 
