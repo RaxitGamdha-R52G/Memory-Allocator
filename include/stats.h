@@ -34,6 +34,14 @@ typedef struct statistics
         size_t remove_page;
     } internal;
 
+    // Page Stats
+    struct {
+        size_t current;
+        size_t peak;
+        size_t created;
+        size_t destroyed;
+    } pages;
+
 } allocator_stats;
 
 // Global statistics object 

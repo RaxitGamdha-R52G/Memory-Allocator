@@ -79,6 +79,8 @@ static p_mem_page create_page(size_t size)
 
     new_page->first_block = block;
 
+    stats.pages.created++;
+
     return new_page;
 }
 
@@ -94,45 +96,53 @@ p_mem_block add_page(size_t size)
     if (g_heap_head == NULL)
     {
         g_heap_head = new_page;
-        g_heap_tail = g_heap_head;
-        return g_heap_head->first_block;
+        g_heap_tail = new_page;
+    }
+    else
+    {
+        g_heap_tail->next = new_page;
+        new_page->prev = g_heap_tail;
+        g_heap_tail = new_page;
     }
 
-    g_heap_tail->next = new_page;
-    new_page->prev = g_heap_tail;
-    g_heap_tail = new_page;
+    stats.pages.current++;
 
-    return g_heap_tail->first_block;
+    if (stats.pages.current > stats.pages.peak)
+        stats.pages.peak = stats.pages.current;
+
+    return new_page->first_block;
 }
 
 void remove_page(p_mem_block block)
 {
     stats.internal.remove_page++;
-    
-    if (block == NULL)
+
+    if (!block)
         return;
 
     p_mem_page page = block->page;
 
-    if (page->prev == NULL)
-        g_heap_head = page->next;
-    else
+    if (page->prev)
         page->prev->next = page->next;
-
-    if (page->next == NULL)
-        g_heap_tail = page->prev;
     else
+        g_heap_head = page->next;
+
+    if (page->next)
         page->next->prev = page->prev;
+    else
+        g_heap_tail = page->prev;
 
     if (munmap(page, page->size + PAGE_HEADER_SIZE) != 0)
     {
         fprintf(stderr, "REMOVE_PAGE request failed\n");
+        return;
     }
-    else
-    {
-        // Count total calls were made to munmap
-        ++munmap_call;
-    }
+
+    stats.pages.current--;
+    stats.pages.destroyed++;
+
+    // Count total calls were made to munmap
+    ++munmap_call;
 }
 
 int is_page_free(p_mem_block block)
